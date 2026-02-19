@@ -89,30 +89,7 @@ jobs:
         if: matrix.variant == 'original'
         run: bash custom.sh
 
-      - name: Using Random Package Name
-        if: matrix.variant == 'spoofed'
-        run: |
-          word1="com"
-          word2=$(tr -dc 'a-z' < /dev/urandom 2>/dev/null | head -c 6) 
-          word3=$(tr -dc 'a-z' < /dev/urandom 2>/dev/null | head -c 7)
-          
-          echo "Spoofing Package to: $word1.$word2.$word3"
-          
-          export word1 word2 word3
-
-          find . -depth -type d -name 'me' -execdir mv {} "$word1" \;
-          find . -depth -type d -name 'weishu' -execdir mv {} "$word2" \;
-          find . -depth -type d -name 'kernelsu' -execdir mv {} "$word3" \;
-
-          find . -type f -not -path '*/.git/*' -exec sed -i \
-              -e "s/me\.weishu\.kernelsu/$word1.$word2.$word3/g" \
-              -e "s/me\/weishu\/kernelsu/$word1\/$word2\/$word3/g" \
-              -e "s/me_weishu_kernelsu/${word1}_${word2}_${word3}/g" {} +
-          
-          if [ -f "./app/build.gradle.kts" ]; then
-             sed -i 's/outputFileName = "KernelSU_${managerVersionName}_${managerVersionCode}-\$name.apk"/outputFileName = "MamboSU_${managerVersionName}_${managerVersionCode}-\$name.apk"/' ./app/build.gradle.kts
-             sed -i 's/\.apk"/-spoofed.apk"/' ./app/build.gradle.kts
-          fi
+      
 
       - name: Setup need_upload
         id: need_upload
@@ -131,7 +108,41 @@ jobs:
               echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
               echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
               echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
-              echo KEYSTORE_FILE='key.jks'
+              
+      - name: Using Random Package Name
+        if: matrix.variant == 'spoofed'
+        run: |
+          word1="com"
+          word2=$(tr -dc 'a-z' < /dev/urandom 2>/dev/null | head -c 6) 
+          word3=$(tr -dc 'a-z' < /dev/urandom 2>/dev/null | head -c 7)
+          
+          echo "Spoofing Package to: $word1.$word2.$word3"
+          export word1 word2 word3
+
+          # 1. Perbaikan Error Positional String (%d -> %1$d)
+          find app/src/main/res -type f -name "strings.xml" -exec sed -i 's/%d/%1$d/1' {} +
+          find app/src/main/res -type f -name "strings.xml" -exec sed -i 's/%d/%2$d/2' {} +
+
+          # 2. Perbaikan Missing Resource 'app_name_mambo'
+          find . -type f \( -name "*.kt" -o -name "*.xml" -o -name "*.java" \) -exec sed -i 's/app_name_mambo/app_name/g' {} +
+
+          # 3. Rename Direktori Package
+          find . -depth -type d -name 'me' -execdir mv {} "$word1" \;
+          find . -depth -type d -name 'weishu' -execdir mv {} "$word2" \;
+          find . -depth -type d -name 'kernelsu' -execdir mv {} "$word3" \;
+
+          # 4. Replace String Package & Branding
+          find . -type f -not -path '*/.git/*' -exec sed -i \
+              -e "s/me\.weishu\.kernelsu/$word1.$word2.$word3/g" \
+              -e "s/me\/weishu\/kernelsu/$word1\/$word2\/$word3/g" \
+              -e "s/me_weishu_kernelsu/${word1}_${word2}_${word3}/g" \
+              -e "s/KernelSU/ZixineSu/g" \
+              -e "s/MamboSU/ZixineSu/g" {} +
+          
+          # 5. Setting Nama Output APK
+          if [ -f "./app/build.gradle.kts" ]; then
+             sed -i 's/outputFileName = ".*.apk"/outputFileName = "ZixineSu_${managerVersionName}_${managerVersionCode}-\$name-spoofed.apk"/' ./app/build.gradle.kts
+          fi       echo KEYSTORE_FILE='key.jks'
             } >> gradle.properties
             echo "${{ secrets.KEYSTORE }}" | base64 -d > key.jks
           fi
