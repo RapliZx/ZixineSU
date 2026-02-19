@@ -216,6 +216,13 @@ jobs:
           echo "EXPECTED_SIZE_ZIXINE_HEX: $(printf '0x%x' $SIZE)"
           echo "------------------------------------------------------"
 
+      - name: Get Sign with ksud
+        run: |
+          # Ambil path APK hasil build
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          # Jalankan perintah yang dikasih teman (asumsi binary ksud sudah ada di folder saat ini)
+          ./ksud debug get-sign "$APK_PATH"
+          
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         if: ${{ github.event_name != 'pull_request' || github.ref_type == 'tag' }}
