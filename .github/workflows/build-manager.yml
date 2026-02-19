@@ -188,16 +188,19 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean assembleRelease
 
-      - name: Get APK Signature (ksud debug)
+      - name: Get APK Signature (Metode Aman Java)
         run: |
-          # Cari file APK hasil build
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          # PENTING: Gunakan biner ksud x86_64 agar bisa jalan di Runner Linux GitHub (Intel/AMD)
-          KSUD_X86=$(find ../ksud_artifacts -name "ksud" | grep "x86_64" | head -n 1)
-          chmod +x "$KSUD_X86"
           echo "------------------------------------------------------"
-          echo "SALIN KODE HEX DI BAWAH INI KE KODE KERNEL ANDA (EXPECTED_SIGNATURE):"
-          "$KSUD_X86" debug get-sign --path "$APK_PATH"
+          echo "SALIN DATA INI KE KERNEL KAMU:"
+          
+          # Pakai keytool biar tidak error arsitektur runner GitHub
+          HASH=$(keytool -printcert -jarfile "$APK_PATH" | grep SHA256 | tr -d '[:space:]' | cut -d: -f2 | tr '[:upper:]' '[:lower:]')
+          SIZE=$(stat -c%s "$APK_PATH")
+          
+          echo "HASH: $HASH"
+          echo "SIZE (Decimal): $SIZE"
+          echo "SIZE (Hex): $(printf '0x%x' $SIZE)"
           echo "------------------------------------------------------"
           
       - name: Upload build artifact
