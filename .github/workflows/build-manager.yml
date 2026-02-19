@@ -188,6 +188,34 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean assembleRelease
 
+      - name: Get APK Signature (Anti Gagal)
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          echo "------------------------------------------------------"
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: APK TIDAK DITEMUKAN!"
+            exit 1
+          fi
+          
+          # Mencari apksigner di Android SDK
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -r | head -n 1)
+          echo "Menggunakan apksigner dari: $APKSIGNER"
+          
+          # Mengambil cert fingerprint
+          CERT_INFO=$($APKSIGNER verify --print-certs "$APK_PATH")
+          echo "$CERT_INFO"
+          
+          # Ekstrak SHA-256 secara presisi
+          HASH=$(echo "$CERT_INFO" | grep "SHA-256 digest" | head -n 1 | cut -d":" -f2 | tr -d ' ' | tr '[:upper:]' '[:lower:]')
+          SIZE=$(stat -c%s "$APK_PATH")
+          
+          echo "------------------------------------------------------"
+          echo "HASIL AKHIR UNTUK KERNEL (manager_sign.h):"
+          echo "EXPECTED_HASH_ZIXINE: $HASH"
+          echo "EXPECTED_SIZE_ZIXINE_DEC: $SIZE"
+          echo "EXPECTED_SIZE_ZIXINE_HEX: $(printf '0x%x' $SIZE)"
+          echo "------------------------------------------------------"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         if: ${{ github.event_name != 'pull_request' || github.ref_type == 'tag' }}
