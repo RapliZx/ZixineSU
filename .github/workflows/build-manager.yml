@@ -97,31 +97,21 @@ jobs:
           word3=$(tr -dc 'a-z' < /dev/urandom 2>/dev/null | head -c 7)
           
           echo "Spoofing Package to: $word1.$word2.$word3"
+          
           export word1 word2 word3
 
-          # 1. Perbaikan Error Positional String (%d -> %1$d)
-          find app/src/main/res -type f -name "strings.xml" -exec sed -i 's/%d/%1$d/1' {} +
-          find app/src/main/res -type f -name "strings.xml" -exec sed -i 's/%d/%2$d/2' {} +
-
-          # 2. Perbaikan Missing Resource 'app_name_mambo'
-          find . -type f \( -name "*.kt" -o -name "*.xml" -o -name "*.java" \) -exec sed -i 's/app_name_mambo/app_name/g' {} +
-
-          # 3. Rename Direktori Package
           find . -depth -type d -name 'me' -execdir mv {} "$word1" \;
           find . -depth -type d -name 'weishu' -execdir mv {} "$word2" \;
           find . -depth -type d -name 'kernelsu' -execdir mv {} "$word3" \;
 
-          # 4. Replace String Package & Branding
           find . -type f -not -path '*/.git/*' -exec sed -i \
               -e "s/me\.weishu\.kernelsu/$word1.$word2.$word3/g" \
               -e "s/me\/weishu\/kernelsu/$word1\/$word2\/$word3/g" \
-              -e "s/me_weishu_kernelsu/${word1}_${word2}_${word3}/g" \
-              -e "s/KernelSU/ZixineSu/g" \
-              -e "s/MamboSU/ZixineSu/g" {} +
+              -e "s/me_weishu_kernelsu/${word1}_${word2}_${word3}/g" {} +
           
-          # 5. Setting Nama Output APK
           if [ -f "./app/build.gradle.kts" ]; then
-             sed -i 's/outputFileName = ".*.apk"/outputFileName = "ZixineSu_${managerVersionName}_${managerVersionCode}-\$name-spoofed.apk"/' ./app/build.gradle.kts
+             sed -i 's/outputFileName = "KernelSU_${managerVersionName}_${managerVersionCode}-\$name.apk"/outputFileName = "MamboSU_${managerVersionName}_${managerVersionCode}-\$name.apk"/' ./app/build.gradle.kts
+             sed -i 's/\.apk"/-spoofed.apk"/' ./app/build.gradle.kts
           fi
 
       - name: Setup need_upload
@@ -159,17 +149,19 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Download arm64 ksud
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ksud-aarch64-linux-android
           path: .
+
       - name: Download x86_64 ksud
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ksud-x86_64-linux-android
           path: .
+
       - name: Download arm ksud
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud-armv7-linux-androideabi
           path: .
@@ -186,34 +178,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean assembleRelease
 
-      - name: Get APK Signature (Anti Gagal)
-        run: |
-          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          echo "------------------------------------------------------"
-          if [ -z "$APK_PATH" ]; then
-            echo "ERROR: APK TIDAK DITEMUKAN!"
-            exit 1
-          fi
-          
-          # Mencari apksigner di Android SDK
-          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -r | head -n 1)
-          echo "Menggunakan apksigner dari: $APKSIGNER"
-          
-          # Mengambil cert fingerprint
-          CERT_INFO=$($APKSIGNER verify --print-certs "$APK_PATH")
-          echo "$CERT_INFO"
-          
-          # Ekstrak SHA-256 secara presisi
-          HASH=$(echo "$CERT_INFO" | grep "SHA-256 digest" | head -n 1 | cut -d":" -f2 | tr -d ' ' | tr '[:upper:]' '[:lower:]')
-          SIZE=$(stat -c%s "$APK_PATH")
-          
-          echo "------------------------------------------------------"
-          echo "HASIL AKHIR UNTUK KERNEL (manager_sign.h):"
-          echo "EXPECTED_HASH_ZIXINE: $HASH"
-          echo "EXPECTED_SIZE_ZIXINE_DEC: $SIZE"
-          echo "EXPECTED_SIZE_ZIXINE_HEX: $(printf '0x%x' $SIZE)"
-          echo "------------------------------------------------------"
-          
       - name: Upload build artifact
         uses: actions/upload-artifact@v5
         if: ${{ github.event_name != 'pull_request' || github.ref_type == 'tag' }}
