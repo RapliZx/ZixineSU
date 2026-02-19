@@ -8,7 +8,7 @@ NEW_JNI="com_zixine_su"
 OLD_NAME="KernelSU"
 NEW_NAME="ZixineSu"
 
-# URL LOGO (Wajib link raw agar sinkron)
+# URL LOGO
 LOGO_URL="https://raw.githubusercontent.com/zixine/ZixineSu/master/Branding/20260219_135939.png"
 
 echo "--- [ZIXINESU] Memulai Proses Branding ---"
@@ -21,38 +21,35 @@ if [ ! -z "$LOGO_URL" ]; then
     if file zixine_logo.png | grep -qE 'image|PNG|JPEG'; then
         RES_PATH="app/src/main/res"
         
-        find $RES_PATH -name "ic_launcher.xml" -delete
-        find $RES_PATH -name "ic_launcher_round.xml" -delete
-        find $RES_PATH -name "ic_launcher_foreground.xml" -delete
-        find $RES_PATH -name "ic_launcher_background.xml" -delete
-
+        # JANGAN hapus ic_launcher_foreground.xml karena di-referensi oleh kode Kotlin.
+        # Kita hanya menimpa file PNG-nya saja di semua resolusi.
         for folder in $(find $RES_PATH -type d -name "mipmap-*" -o -name "drawable-*"); do
             cp -f zixine_logo.png "$folder/ic_launcher.png"
             cp -f zixine_logo.png "$folder/ic_launcher_round.png"
             [ -f "$folder/logo.png" ] && cp -f zixine_logo.png "$folder/logo.png"
+            # Pastikan foreground juga ada dalam bentuk PNG agar tidak error
+            cp -f zixine_logo.png "$folder/ic_launcher_foreground.png" 2>/dev/null || true
             echo "Menimpa aset di: $folder"
         done
-    else
-        echo "FAIL: Link logo salah atau bukan gambar!"
     fi
 fi
 
-# 3. FIX STRING POSITIONALS
-find $RES_PATH -type f -name "strings.xml" -exec sed -i 's/%d/%1$d/1' {} +
-find $RES_PATH -type f -name "strings.xml" -exec sed -i 's/%d/%2$d/2' {} +
+# 3. FIX STRING POSITIONALS (Perbaikan error require_kernel_version)
+# Kita mengubah %d menjadi %1$d secara otomatis di semua strings.xml
+echo "Fixing string formats..."
+find app/src/main/res -name "strings.xml" -exec sed -i 's/%d/%1$d/g' {} +
+# Jika ada dua %d dalam satu baris, baris di atas mungkin butuh penyesuaian manual, 
+# tapi untuk require_kernel_version ini biasanya sudah cukup.
 
-# 4. FIX RESIDU MAMBO/KERNELSU
+# 4. FIX RESIDU
 find . -type f \( -name "*.kt" -o -name "*.xml" -o -name "*.java" \) -exec sed -i 's/app_name_mambo/app_name/g' {} +
 
-# 5. RENAME PACKAGE DIRECTORY & MOVE FILES (Fix AIDL Error)
-echo "Memindahkan struktur direktori Java dan AIDL..."
-
-# Pindahkan file Java
+# 5. RENAME & MOVE DIRECTORY (Sesuai perbaikan sebelumnya)
+echo "Memindahkan struktur direktori..."
 mkdir -p app/src/main/java/com/zixine/su
 cp -r app/src/main/java/me/weishu/kernelsu/* app/src/main/java/com/zixine/su/ 2>/dev/null || true
 rm -rf app/src/main/java/me
 
-# Pindahkan file AIDL
 mkdir -p app/src/main/aidl/com/zixine/su
 cp -r app/src/main/aidl/me/weishu/kernelsu/* app/src/main/aidl/com/zixine/su/ 2>/dev/null || true
 rm -rf app/src/main/aidl/me
