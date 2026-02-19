@@ -1,68 +1,65 @@
 #!/bin/bash
 
-# 1. IDENTITAS & LOGO ZIXINESU
-word1="com"
-word2="zixine"
-word3="su"
+# 1. IDENTITAS BRANDING
+# Mengikuti pola RapliVx: Ganti semua referensi teks
+OLD_PKG="me.weishu.kernelsu"
+NEW_PKG="com.zixine.su"
+OLD_NAME="KernelSU"
+NEW_NAME="ZixineSu"
 
-# URL LOGO (Wajib Raw Link Direct)
+# URL LOGO (Wajib link raw agar sinkron)
 LOGO_URL="https://raw.githubusercontent.com/zixine/ZixineSu/master/Branding/20260219_135939.png"
 
-export word1 word2 word3
+echo "--- [ZIXINESU] Memulai Proses Branding Ala MamboSU ---"
 
-echo "--- Memulai Branding ZixineSu & Logo Fix ---"
-
-# 2. PENGGANTIAN LOGO (FORCE PNG)
+# 2. DOWNLOAD & REPLACE LOGO (Metode Sinkron)
 if [ ! -z "$LOGO_URL" ]; then
-    echo "Downloading logo from: $LOGO_URL"
-    curl -L -o new_logo.png "$LOGO_URL"
+    echo "Downloading Branding Assets..."
+    curl -L -o zixine_logo.png "$LOGO_URL"
     
-    if file new_logo.png | grep -qE 'image|bitmap|PNG|JPEG'; then
-        echo "Gambar valid. Menghapus ikon adaptif XML dan mengganti PNG..."
+    if file zixine_logo.png | grep -qE 'image|PNG|JPEG'; then
         RES_PATH="app/src/main/res"
         
-        # WAJIB: Hapus semua file XML icon yang menutupi PNG kita di Android modern
+        # Hapus file XML Ikon Adaptif (Metode RapliVx untuk force PNG)
+        # Android modern akan mengabaikan PNG jika XML ini masih ada
         find $RES_PATH -name "ic_launcher.xml" -delete
         find $RES_PATH -name "ic_launcher_round.xml" -delete
         find $RES_PATH -name "ic_launcher_foreground.xml" -delete
         find $RES_PATH -name "ic_launcher_background.xml" -delete
 
-        # Ganti semua ikon PNG di folder mipmap
-        for dir in $RES_PATH/mipmap-*; do
-            if [ -d "$dir" ]; then
-                cp -f new_logo.png "$dir/ic_launcher.png"
-                cp -f new_logo.png "$dir/ic_launcher_round.png"
-                echo "Updated icons in $dir"
-            fi
+        # Menimpa semua folder mipmap & drawable (Semua Resolusi)
+        # RapliVx menggunakan pola loop untuk memastikan semua density kena
+        for folder in $(find $RES_PATH -type d -name "mipmap-*" -o -name "drawable-*"); do
+            cp -f zixine_logo.png "$folder/ic_launcher.png"
+            cp -f zixine_logo.png "$folder/ic_launcher_round.png"
+            # MamboSU kadang menimpa logo di drawable juga
+            [ -f "$folder/logo.png" ] && cp -f zixine_logo.png "$folder/logo.png"
+            echo "Menimpa aset di: $folder"
         done
-        echo "Logo ZixineSu berhasil diterapkan."
     else
-        echo "ERROR: File yang didownload bukan gambar valid!"
+        echo "FAIL: Link logo salah atau bukan gambar!"
     fi
 fi
 
-# 3. PERBAIKAN FORMAT STRING
-echo "Memperbaiki variabel string..."
-find app/src/main/res -type f -name "strings.xml" -exec sed -i 's/%d/%1$d/1' {} +
-find app/src/main/res -type f -name "strings.xml" -exec sed -i 's/%d/%2$d/2' {} +
+# 3. FIX STRING POSITIONALS (Fix Error mergeReleaseResources)
+find $RES_PATH -type f -name "strings.xml" -exec sed -i 's/%d/%1$d/1' {} +
+find $RES_PATH -type f -name "strings.xml" -exec sed -i 's/%d/%2$d/2' {} +
 
-# 4. MEMBERSIHKAN SISA MAMBOSU
-echo "Pembersihan sisa MamboSU..."
+# 4. FIX RESIDU MAMBO/KERNELSU
+# Mengikuti cara RapliVx membersihkan resource yang tidak ditemukan
 find . -type f \( -name "*.kt" -o -name "*.xml" -o -name "*.java" \) -exec sed -i 's/app_name_mambo/app_name/g' {} +
 
-# 5. RENAME FOLDER PACKAGE
-echo "Mengubah folder package ke $word1/$word2/$word3..."
-find . -depth -type d -name 'me' -execdir mv {} "$word1" \;
-find . -depth -type d -name 'weishu' -execdir mv {} "$word2" \;
-find . -depth -type d -name 'kernelsu' -execdir mv {} "$word3" \;
+# 5. RENAME PACKAGE DIRECTORY
+# com/zixine/su
+mkdir -p "app/src/main/java/com/zixine/su"
+# (Proses pindah file biasanya ditangani oleh sed, tapi folder harus ada)
 
-# 6. REPLACE TEXT BRANDING
-echo "Final replacement..."
+# 6. GLOBAL TEXT REPLACEMENT (Branding Total)
+echo "Replacing strings: $OLD_NAME -> $NEW_NAME"
 find . -type f -not -path '*/.git/*' -exec sed -i \
-    -e "s/me\.weishu\.kernelsu/$word1.$word2.$word3/g" \
-    -e "s/me\/weishu\/kernelsu/$word1\/$word2\/$word3/g" \
-    -e "s/me_weishu_kernelsu/${word1}_${word2}_${word3}/g" \
-    -e "s/KernelSU/ZixineSu/g" \
-    -e "s/MamboSU/ZixineSu/g" {} +
+    -e "s/$OLD_PKG/$NEW_PKG/g" \
+    -e "s/me\/weishu\/kernelsu/com\/zixine\/su/g" \
+    -e "s/KernelSU/$NEW_NAME/g" \
+    -e "s/MamboSU/$NEW_NAME/g" {} +
 
-echo "--- Selesai ---"
+echo "--- [ZIXINESU] Branding Selesai! ---"
