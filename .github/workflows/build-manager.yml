@@ -191,6 +191,23 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean assembleRelease
 
+      - name: Build with Gradle
+        run: ./gradlew clean assembleRelease
+
+      - name: Get APK Signature (ksud debug)
+        run: |
+          # Cari file APK hasil build
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          
+          # Gunakan biner ksud yang sudah didownload sebelumnya
+          # Berdasarkan filemu, ksud ada di direktori root (satu tingkat di atas manager)
+          chmod +x ../aarch64-linux-android/release/ksud
+          
+          echo "------------------------------------------------------"
+          echo "ZIXINESU SIGNATURE HASH:"
+          ../aarch64-linux-android/release/ksud debug get-sign --path "$APK_PATH"
+          echo "------------------------------------------------------"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v5
         if: ${{ github.event_name != 'pull_request' || github.ref_type == 'tag' }}
