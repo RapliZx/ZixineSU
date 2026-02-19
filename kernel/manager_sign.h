@@ -53,6 +53,10 @@
 #define EXPECTED_HASH_MAMBO \
     "a9462b8b98ea1ca7901b0cbdcebfaa35f0aa95e51b01d66e6b6d2c81b97746d8"
 
+// ZixineSu/KernelSU
+#define EXPECTED_SIZE_ZIXINE 0xa8e397
+#define EXPECTED_HASH_ZIXINE \
+    "ccec15172719e47b707058f8e437be9a5d5bc778165fdcb80435f2d429ef029a"
 typedef struct {
     u32 size;
     const char *sha256;
