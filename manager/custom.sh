@@ -2,8 +2,10 @@
 
 # 1. IDENTITAS BRANDING
 # Mengikuti pola RapliVx: Ganti semua referensi teks
-OLD_PKG="me.weishu.kernelsu"
+OLD_PKG="me\.weishu\.kernelsu" # Menggunakan escape (\) agar titik dibaca sebagai karakter titik asli, bukan wildcard regex
 NEW_PKG="com.zixine.su"
+OLD_JNI="me_weishu_kernelsu"   # Menambahkan variabel khusus untuk file C/C++ (JNI)
+NEW_JNI="com_zixine_su"        # Format package dengan garis bawah
 OLD_NAME="KernelSU"
 NEW_NAME="ZixineSu"
 
@@ -59,6 +61,7 @@ echo "Replacing strings: $OLD_NAME -> $NEW_NAME"
 find . -type f -not -path '*/.git/*' -exec sed -i \
     -e "s/$OLD_PKG/$NEW_PKG/g" \
     -e "s/me\/weishu\/kernelsu/com\/zixine\/su/g" \
+    -e "s/$OLD_JNI/$NEW_JNI/g" \
     -e "s/KernelSU/$NEW_NAME/g" \
     -e "s/MamboSU/$NEW_NAME/g" {} +
 
