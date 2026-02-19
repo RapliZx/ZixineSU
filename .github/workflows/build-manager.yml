@@ -101,14 +101,16 @@ jobs:
           fi
 
       - name: Write key
-        if: ${{ github.event_name != 'pull_request' || github.ref_type == 'tag' }}
+        if: github.event_name != 'pull_request' || github.ref_type == 'tag'
         run: |
           if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
-            {
-              echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
-              echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
-              echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
-              
+            echo "KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'" > gradle.properties
+            echo "KEY_ALIAS='${{ secrets.KEY_ALIAS }}'" >> gradle.properties
+            echo "KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'" >> gradle.properties
+            echo "KEYSTORE_FILE='key.jks'" >> gradle.properties
+            echo "${{ secrets.KEYSTORE }}" | base64 -d > key.jks
+          fi
+          
       - name: Using Random Package Name
         if: matrix.variant == 'spoofed'
         run: |
