@@ -1,0 +1,27 @@
+name: Generate My Keystore
+
+on:
+  workflow_dispatch: # Hanya dijalankan secara manual
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Keystore File
+        run: |
+          keytool -genkey -v -keystore zixinesu.jks \
+          -keyalg RSA -keysize 2048 -validity 10000 \
+          -alias zixine_key \
+          -storepass mypassword123 -keypass mypassword123 \
+          -dname "CN=Zixine, OU=ZixineSu, O=Zixine, L=ID, S=ID, C=ID"
+
+      - name: Convert to Base64
+        run: |
+          echo "SALIN KODE DI BAWAH INI UNTUK ISI SECRET 'KEYSTORE':"
+          echo "----------------------------------------------------"
+          base64 -w 0 zixinesu.jks
+          echo -e "\n----------------------------------------------------"
+          echo "Password & Alias untuk Secret lainnya:"
+          echo "KEYSTORE_PASSWORD: mypassword123"
+          echo "KEY_ALIAS: zixine_key"
+          echo "KEY_PASSWORD: mypassword123"
