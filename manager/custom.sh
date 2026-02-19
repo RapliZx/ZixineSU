@@ -26,7 +26,7 @@ if [ ! -z "$LOGO_URL" ]; then
         for folder in $(find $RES_PATH -type d -name "mipmap-*" -o -name "drawable-*"); do
             cp -f 20260219_135939.png "$folder/ic_launcher.png"
             cp -f 20260219_135939.png "$folder/ic_launcher_round.png"
-            [ -f "$folder/20260219_135939.png" ] && cp -f 20260219_135939.png "$folder/20260219_135939.png"
+            [ -f "$folder/logo.png" ] && cp -f 20260219_135939.png "$folder/logo.png"
             # Pastikan foreground juga ada dalam bentuk PNG agar tidak error
             cp -f 20260219_135939.png "$folder/ic_launcher_foreground.png" 2>/dev/null || true
             echo "Menimpa aset di: $folder"
