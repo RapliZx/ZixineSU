@@ -216,12 +216,19 @@ jobs:
           echo "EXPECTED_SIZE_ZIXINE_HEX: $(printf '0x%x' $SIZE)"
           echo "------------------------------------------------------"
 
-      - name: Get Sign with ksud
+      - name: Get APK Signature (Sesuai Kebutuhan Kernel)
         run: |
-          # Ambil path APK hasil build
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          # Jalankan perintah yang dikasih teman (asumsi binary ksud sudah ada di folder saat ini)
-          ./ksud debug get-sign "$APK_PATH"
+          
+          # Gunakan ksud untuk mendapatkan data yang SAMA dengan yang dibaca kernel
+          # Asumsi ksud sudah di-download di step sebelumnya
+          chmod +x ../aarch64-linux-android/release/ksud
+          SIGN_INFO=$(../aarch64-linux-android/release/ksud debug get-sign "$APK_PATH")
+          
+          echo "------------------------------------------------------"
+          echo "HASIL UNTUK MANAGER_SIGN.H:"
+          echo "$SIGN_INFO"
+          echo "------------------------------------------------------"
           
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
