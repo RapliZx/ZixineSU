@@ -188,19 +188,28 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean assembleRelease
 
-      - name: Get APK Signature (Fixed Method)
+      - name: Get APK Signature (Debug Info)
         run: |
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
           echo "------------------------------------------------------"
-          echo "SALIN DATA INI KE KERNEL KAMU:"
+          echo "DEBUG: APK_PATH is $APK_PATH"
           
-          # Fix: Mengambil HASH SHA256 dengan format yang benar-benar bersih
-          HASH=$(keytool -printcert -jarfile "$APK_PATH" | grep SHA256 | tr -d '[:space:]' | tr -d ':' | sed 's/SHA256//' | tr '[:upper:]' '[:lower:]')
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: APK NOT FOUND!"
+            exit 1
+          fi
+
+          echo "ZIXINESU SIGNATURE DATA:"
+          # Mengambil hash SHA-256 dan memprosesnya agar bersih
+          RAW_CERT=$(keytool -printcert -jarfile "$APK_PATH" | grep SHA256)
+          echo "RAW cert: $RAW_CERT"
+          
+          HASH=$(echo "$RAW_CERT" | tr -d '[:space:]' | tr -d ':' | sed 's/SHA256//' | tr '[:upper:]' '[:lower:]')
           SIZE=$(stat -c%s "$APK_PATH")
           
-          echo "HASH: $HASH"
-          echo "SIZE (Decimal): $SIZE"
-          echo "SIZE (Hex): $(printf '0x%x' $SIZE)"
+          echo "FINAL_HASH: $HASH"
+          echo "FINAL_SIZE_DECIMAL: $SIZE"
+          echo "FINAL_SIZE_HEX: $(printf '0x%x' $SIZE)"
           echo "------------------------------------------------------"
           
       - name: Upload build artifact
