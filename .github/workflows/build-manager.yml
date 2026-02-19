@@ -188,14 +188,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean assembleRelease
 
-      - name: Get APK Signature (Metode Aman Java)
+      - name: Get APK Signature (Fixed Method)
         run: |
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
           echo "------------------------------------------------------"
           echo "SALIN DATA INI KE KERNEL KAMU:"
           
-          # Pakai keytool biar tidak error arsitektur runner GitHub
-          HASH=$(keytool -printcert -jarfile "$APK_PATH" | grep SHA256 | tr -d '[:space:]' | cut -d: -f2 | tr '[:upper:]' '[:lower:]')
+          # Fix: Mengambil HASH SHA256 dengan format yang benar-benar bersih
+          HASH=$(keytool -printcert -jarfile "$APK_PATH" | grep SHA256 | tr -d '[:space:]' | tr -d ':' | sed 's/SHA256//' | tr '[:upper:]' '[:lower:]')
           SIZE=$(stat -c%s "$APK_PATH")
           
           echo "HASH: $HASH"
