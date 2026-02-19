@@ -16,19 +16,19 @@ echo "--- [ZIXINESU] Memulai Proses Branding ---"
 # 2. DOWNLOAD & REPLACE LOGO
 if [ ! -z "$LOGO_URL" ]; then
     echo "Downloading Branding Assets..."
-    curl -L -o zixine_logo.png "$LOGO_URL"
+    curl -L -o 20260219_135939.png "$LOGO_URL"
     
-    if file zixine_logo.png | grep -qE 'image|PNG|JPEG'; then
+    if file 20260219_135939.png | grep -qE 'image|PNG|JPEG'; then
         RES_PATH="app/src/main/res"
         
         # JANGAN hapus ic_launcher_foreground.xml karena di-referensi oleh kode Kotlin.
         # Kita hanya menimpa file PNG-nya saja di semua resolusi.
         for folder in $(find $RES_PATH -type d -name "mipmap-*" -o -name "drawable-*"); do
-            cp -f zixine_logo.png "$folder/ic_launcher.png"
-            cp -f zixine_logo.png "$folder/ic_launcher_round.png"
-            [ -f "$folder/logo.png" ] && cp -f zixine_logo.png "$folder/logo.png"
+            cp -f 20260219_135939.png "$folder/ic_launcher.png"
+            cp -f 20260219_135939.png "$folder/ic_launcher_round.png"
+            [ -f "$folder/20260219_135939.png" ] && cp -f 20260219_135939.png "$folder/20260219_135939.png"
             # Pastikan foreground juga ada dalam bentuk PNG agar tidak error
-            cp -f zixine_logo.png "$folder/ic_launcher_foreground.png" 2>/dev/null || true
+            cp -f 20260219_135939.png "$folder/ic_launcher_foreground.png" 2>/dev/null || true
             echo "Menimpa aset di: $folder"
         done
     fi
