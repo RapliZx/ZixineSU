@@ -7,7 +7,7 @@ word3="su"
 
 # URL Logo Baru - PASTIKAN INI LINK LANGSUNG (DIRECT LINK) KE GAMBAR PNG
 # Jika ragu, biarkan kosong dulu atau gunakan link yang valid.
-LOGO_URL="https://github.com/zixine/ZixineSu/blob/master/Branding/20260219_135939.png" 
+LOGO_URL="https://raw.githubusercontent.com/zixine/ZixineSu/refs/heads/master/Branding/20260219_135939.png" 
 
 export word1 word2 word3
 
