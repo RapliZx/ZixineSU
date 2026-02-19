@@ -2,8 +2,8 @@
 set -eu
 
 GKI_ROOT=$(pwd)
-OWNER="raplivx"
-REPO="KernelSU"
+OWNER="zixine"
+REPO="ZixineSu"
 
 display_usage() {
     echo "Usage: $0 [--cleanup | <commit-or-tag>]"
