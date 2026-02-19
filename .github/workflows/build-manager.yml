@@ -188,24 +188,32 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean assembleRelease
 
-      - name: Get APK Signature (Otomatis & Terjamin)
+      - name: Get APK Signature (Anti Gagal)
         run: |
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
           echo "------------------------------------------------------"
-          echo "ZIXINESU SIGNATURE LOG:"
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: APK TIDAK DITEMUKAN!"
+            exit 1
+          fi
           
-          # Perintah ini lebih tangguh untuk mengambil SHA256
-          RAW_OUTPUT=$(keytool -printcert -jarfile "$APK_PATH")
-          echo "$RAW_OUTPUT"
+          # Mencari apksigner di Android SDK
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -r | head -n 1)
+          echo "Menggunakan apksigner dari: $APKSIGNER"
           
-          HASH=$(echo "$RAW_OUTPUT" | grep SHA256 | head -n 1 | cut -d':' -f2 | tr -d ' ' | tr -d ':' | tr '[:upper:]' '[:lower:]')
+          # Mengambil cert fingerprint
+          CERT_INFO=$($APKSIGNER verify --print-certs "$APK_PATH")
+          echo "$CERT_INFO"
+          
+          # Ekstrak SHA-256 secara presisi
+          HASH=$(echo "$CERT_INFO" | grep "SHA-256 digest" | head -n 1 | cut -d":" -f2 | tr -d ' ' | tr '[:upper:]' '[:lower:]')
           SIZE=$(stat -c%s "$APK_PATH")
           
           echo "------------------------------------------------------"
-          echo "SALIN KODE INI KE KERNEL:"
-          echo "HASH: $HASH"
-          echo "SIZE (Decimal): $SIZE"
-          echo "SIZE (Hex): $(printf '0x%x' $SIZE)"
+          echo "HASIL AKHIR UNTUK KERNEL (manager_sign.h):"
+          echo "EXPECTED_HASH_ZIXINE: $HASH"
+          echo "EXPECTED_SIZE_ZIXINE_DEC: $SIZE"
+          echo "EXPECTED_SIZE_ZIXINE_HEX: $(printf '0x%x' $SIZE)"
           echo "------------------------------------------------------"
           
       - name: Upload build artifact
