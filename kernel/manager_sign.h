@@ -59,10 +59,20 @@
 #define EXPECTED_HASH_MAMBO \
     "a9462b8b98ea1ca7901b0cbdcebfaa35f0aa95e51b01d66e6b6d2c81b97746d8"
 
-// ZixineSu/KernelSU (PERBAIKAN: Sesuai Log GitHub Actions 0xa8e123)
+// zixine/ZixineSu (ZixineSu)
 #define EXPECTED_SIZE_ZIXINE 0x362
 #define EXPECTED_HASH_ZIXINE \
     "ccec15172719e47b707058f8e437be9a5d5bc778165fdcb80435f2d429ef029a"
+
+// VorteXSU/VorteXSU
+#define EXPECTED_SIZE_VORTEXSU 0x381
+#define EXPECTED_HASH_VORTEXSU                                                    \
+    "67eec44718428adad14e6a9dca57822759aba7e77a8cad7071f6f6704df8bb48"
+
+// Dynamic Sign
+#define EXPECTED_SIZE_OTHER 0x300
+#define EXPECTED_HASH_OTHER                                                    \
+    "0000000000000000000000000000000000000000000000000000000000000000"
 
 typedef struct {
     u32 size;
